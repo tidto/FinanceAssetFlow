@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="finance_background">#F5F7FB</color>
+    <color name="finance_primary">#1457C5</color>
+    <color name="finance_secondary">#0F8A5F</color>
+    <color name="finance_surface">#FFFFFF</color>
+    <color name="finance_tertiary">#B54708</color>
+    <string name="app_name">FinanceAssetFlow</string>
+    <style name="Theme.FinanceAssetFlow" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/white</item>
+    </style>
+</resources>

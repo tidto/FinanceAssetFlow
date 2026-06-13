@@ -18,6 +18,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -47,6 +48,7 @@ import com.financeasserflow.pfmapp.viewmodel.RebalancingItem
 import com.financeasserflow.pfmapp.viewmodel.toMoneyText
 import com.financeasserflow.pfmapp.viewmodel.toPercentText
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PortfolioScreen(
     viewModel: AssetViewModel,
