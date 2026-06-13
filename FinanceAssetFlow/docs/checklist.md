@@ -73,8 +73,12 @@
   - `AssetRepository.observeAllHistories()` 추가
   - `AssetViewModel.buildNetWorthChart()` 월별 delta 누적 계산
   - `DashboardScreen` — `NetWorthChartSection` + `NetWorthBarChart` 컴포저블 추가
+- [x] 리밸런싱 자동 계산기 구현
+  - `RebalancingAction` enum, `RebalancingItem` 데이터 클래스 추가
+  - `AssetViewModel.calculateRebalancing()` — BUY / SELL / BALANCED 판정 + 임계값 1%
+  - `onPortfolioTargetRatioChange()` — 목표 비율 변경 시 실시간 재계산
+  - `PortfolioScreen` — `RebalancingSection` + `RebalancingRow` 컴포저블 추가
 - [ ] 실시간 주식 시세 API 연동 (예정 — API 키 필요)
-- [ ] 리밸런싱 자동 계산기 (예정)
 
 ## Phase 7. 문서화
 

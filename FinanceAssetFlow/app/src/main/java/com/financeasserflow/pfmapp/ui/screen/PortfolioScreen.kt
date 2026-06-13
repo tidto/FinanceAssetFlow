@@ -42,6 +42,8 @@ import com.financeasserflow.pfmapp.data.model.AssetCategory
 import com.financeasserflow.pfmapp.viewmodel.AssetViewModel
 import com.financeasserflow.pfmapp.viewmodel.PortfolioEditUiState
 import com.financeasserflow.pfmapp.viewmodel.PortfolioTargetInputItem
+import com.financeasserflow.pfmapp.viewmodel.RebalancingAction
+import com.financeasserflow.pfmapp.viewmodel.RebalancingItem
 import com.financeasserflow.pfmapp.viewmodel.toMoneyText
 import com.financeasserflow.pfmapp.viewmodel.toPercentText
 
@@ -102,6 +104,12 @@ fun PortfolioScreen(
                     onClick = { viewModel.savePortfolioTargets() },
                 ) {
                     Text(text = if (state.isSaving) "저장 중..." else "목표 비율 저장")
+                }
+                if (state.rebalancing.isNotEmpty()) {
+                    RebalancingSection(
+                        items = state.rebalancing,
+                        totalAsset = state.totalAsset,
+                    )
                 }
             }
         }
@@ -190,6 +198,90 @@ private fun PortfolioTargetRow(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 suffix = { Text("%") },
             )
+        }
+    }
+}
+
+@Composable
+private fun RebalancingSection(
+    items: List<RebalancingItem>,
+    totalAsset: Long,
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "리밸런싱 계산기",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "목표 비율에 맞추려면 아래와 같이 조정하세요. (총자산 기준: ${totalAsset.toMoneyText()})",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+
+            items.forEachIndexed { index, item ->
+                RebalancingRow(item = item)
+                if (index < items.lastIndex) {
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 10.dp))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun RebalancingRow(item: RebalancingItem) {
+    val (actionLabel, actionColor) = when (item.action) {
+        RebalancingAction.BUY -> "추가 매수" to MaterialTheme.colorScheme.primary
+        RebalancingAction.SELL -> "매도 권장" to MaterialTheme.colorScheme.error
+        RebalancingAction.BALANCED -> "균형 유지" to MaterialTheme.colorScheme.tertiary
+    }
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.Top,
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = item.category.label,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Medium,
+            )
+            Text(
+                text = "현재 ${item.currentAmount.toMoneyText()} → 목표 ${item.targetAmount.toMoneyText()}",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Spacer(modifier = Modifier.width(12.dp))
+        Column(horizontalAlignment = Alignment.End) {
+            Text(
+                text = actionLabel,
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = actionColor,
+            )
+            if (item.action != RebalancingAction.BALANCED) {
+                Text(
+                    text = item.deltaAmount.toMoneyText(),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = actionColor,
+                )
+            } else {
+                Text(
+                    text = "✓",
+                    style = MaterialTheme.typography.titleSmall,
+                    color = actionColor,
+                )
+            }
         }
     }
 }

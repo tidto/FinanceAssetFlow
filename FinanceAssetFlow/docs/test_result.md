@@ -154,6 +154,21 @@
 
 ---
 
-## 7. 추후 기록 원칙
+## 7. RebalancingCalculatorTest (추가 — 리밸런싱 계산기)
+
+| ID | 설명 | 상태 |
+| --- | --- | --- |
+| T-RB-01 | 총자산 0일 때 빈 리스트 반환 | 설계 상 보장 (조기 반환) |
+| T-RB-02 | targetRatioInput 빈 문자열 → 해당 항목 skip | 설계 상 보장 (mapNotNull) |
+| T-RB-03 | delta > threshold → BUY 판정 | 코드 검토 완료 |
+| T-RB-04 | delta < -threshold → SELL 판정 | 코드 검토 완료 |
+| T-RB-05 | abs(delta) ≤ threshold → BALANCED 판정 | 코드 검토 완료 |
+| T-RB-06 | targetAmount = totalAsset × ratio / 100 정확도 | 코드 검토 완료 |
+| T-RB-07 | threshold = max(totalAsset × 1%, 1_000원) | 코드 검토 완료 |
+| T-RB-08 | 목표 비율 변경 시 즉시 재계산 | onPortfolioTargetRatioChange 내 재계산 확인 |
+
+---
+
+## 8. 추후 기록 원칙
 
 실제 테스트를 실행한 뒤에는 실패 내역을 삭제하지 않고, 실패 원인과 수정 내역을 `bugfix_log.md`에 연결하여 기록한다. 최종 제출 전에는 모든 필수 테스트가 PASS 상태가 되도록 관리한다.

@@ -29,6 +29,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
+import kotlin.math.abs
 
 @HiltViewModel
 class AssetViewModel @Inject constructor(
@@ -185,11 +186,8 @@ class AssetViewModel @Inject constructor(
                     val currentAmount = assetOnly
                         .filter { it.category == category }
                         .sumOf { it.currentValue() }
-                    val currentRatio = if (totalAsset == 0L) {
-                        0.0
-                    } else {
-                        currentAmount.toDouble() * 100.0 / totalAsset.toDouble()
-                    }
+                    val currentRatio = if (totalAsset == 0L) 0.0
+                    else currentAmount.toDouble() * 100.0 / totalAsset.toDouble()
                     val targetRatio = targets.firstOrNull { it.category == category }?.targetRatio ?: 0.0
                     PortfolioTargetInputItem(
                         category = category,
@@ -199,18 +197,48 @@ class AssetViewModel @Inject constructor(
                     )
                 }
 
-            _portfolioEditState.update { it.copy(items = items, isLoading = false) }
+            val rebalancing = calculateRebalancing(items, totalAsset)
+
+            _portfolioEditState.update {
+                it.copy(items = items, rebalancing = rebalancing, totalAsset = totalAsset, isLoading = false)
+            }
+        }
+    }
+
+    private fun calculateRebalancing(
+        items: List<PortfolioTargetInputItem>,
+        totalAsset: Long,
+    ): List<RebalancingItem> {
+        if (totalAsset == 0L) return emptyList()
+        return items.mapNotNull { item ->
+            val targetRatio = item.targetRatioInput.toDoubleOrNull() ?: return@mapNotNull null
+            if (targetRatio <= 0.0) return@mapNotNull null
+            val targetAmount = (totalAsset * targetRatio / 100.0).toLong()
+            val delta = targetAmount - item.currentAmount
+            val threshold = (totalAsset * 0.01).toLong().coerceAtLeast(1_000L)
+            val action = when {
+                delta > threshold -> RebalancingAction.BUY
+                delta < -threshold -> RebalancingAction.SELL
+                else -> RebalancingAction.BALANCED
+            }
+            RebalancingItem(
+                category = item.category,
+                currentAmount = item.currentAmount,
+                targetAmount = targetAmount,
+                deltaAmount = abs(delta),
+                action = action,
+            )
         }
     }
 
     fun onPortfolioTargetRatioChange(category: AssetCategory, value: String) {
         _portfolioEditState.update { state ->
             val cleaned = value.filter { it.isDigit() || it == '.' }
-            state.copy(
-                items = state.items.map { item ->
-                    if (item.category == category) item.copy(targetRatioInput = cleaned) else item
-                },
-            )
+            val updatedItems = state.items.map { item ->
+                if (item.category == category) item.copy(targetRatioInput = cleaned) else item
+            }
+            val updatedRebalancing = calculateRebalancing(updatedItems, state.totalAsset)
+            state.copy(items = updatedItems, rebalancing = updatedRebalancing)
         }
     }
 

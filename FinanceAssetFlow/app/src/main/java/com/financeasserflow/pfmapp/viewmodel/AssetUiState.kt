@@ -70,8 +70,20 @@ data class PortfolioTargetInputItem(
     val targetRatioInput: String,
 )
 
+enum class RebalancingAction { BUY, SELL, BALANCED }
+
+data class RebalancingItem(
+    val category: AssetCategory,
+    val currentAmount: Long,
+    val targetAmount: Long,
+    val deltaAmount: Long,
+    val action: RebalancingAction,
+)
+
 data class PortfolioEditUiState(
     val items: List<PortfolioTargetInputItem> = emptyList(),
+    val rebalancing: List<RebalancingItem> = emptyList(),
+    val totalAsset: Long = 0L,
     val isLoading: Boolean = false,
     val isSaving: Boolean = false,
     val snackbarMessage: String? = null,

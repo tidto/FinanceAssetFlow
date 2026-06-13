@@ -65,6 +65,36 @@
 
 ---
 
+## 2026-06-13 — 리밸런싱 자동 계산기 추가
+
+### 작업 내용
+
+- **RebalancingItem / RebalancingAction 데이터 클래스 추가** (`AssetUiState.kt`)
+  - `RebalancingAction`: BUY / SELL / BALANCED enum
+  - `RebalancingItem`: category, currentAmount, targetAmount, deltaAmount, action
+  - `PortfolioEditUiState`에 `rebalancing: List<RebalancingItem>`, `totalAsset: Long` 필드 추가
+
+- **AssetViewModel 로직 추가**
+  - `calculateRebalancing()`: targetRatio 입력 → targetAmount 계산 → delta → action 판정
+  - 임계값(threshold): totalAsset 1% 또는 최소 1,000원 — 미세 오차로 인한 불필요한 권고 방지
+  - `loadPortfolioForEdit()`: 화면 진입 시 자동 계산
+  - `onPortfolioTargetRatioChange()`: 목표 비율 수정 시마다 실시간 재계산
+
+- **PortfolioScreen UI 추가**
+  - 저장 버튼 하단에 `RebalancingSection` 카드 조건부 표시
+  - `RebalancingRow`: 자산군별 현재 금액 → 목표 금액 + 행동 라벨 + 필요 금액
+  - 색상 코딩: 추가 매수(Primary 파랑) / 매도 권장(Error 빨강) / 균형 유지(Tertiary 초록)
+
+### 설계 결정
+
+| 항목 | 결정 | 이유 |
+| --- | --- | --- |
+| 임계값 1% | 총자산의 1% 이하 오차는 BALANCED 처리 | 소액 반올림 오차로 인한 불필요 매매 권고 방지 |
+| 실시간 재계산 | 목표 % 입력 변경 시 즉시 재계산 | 사용자가 타이핑하는 동안 결과를 즉시 확인 가능 |
+| 저장 버튼 이후 표시 | 저장 전 계산 결과를 미리 보여줌 | 저장 전에 결과를 검토하고 수정할 수 있도록 |
+
+---
+
 ## 2026-06-13 — 순자산 추이 그래프 추가
 
 ### 작업 내용
