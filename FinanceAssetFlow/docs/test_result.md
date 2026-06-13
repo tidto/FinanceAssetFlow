@@ -132,10 +132,28 @@
 
 | 날짜 | 결과 | APK 경로 |
 | --- | --- | --- |
-| 2026-06-13 | BUILD SUCCESSFUL | `app/build/outputs/apk/debug/app-debug.apk` |
+| 2026-06-13 (Hilt+차트) | BUILD SUCCESSFUL | `app/build/outputs/apk/debug/app-debug.apk` |
 
 ---
 
-## 6. 추후 기록 원칙
+## 6. NetWorthChartTest (추가 — 순자산 추이 차트)
+
+> `buildNetWorthChart()` 로직은 `NetWorthCalculatorTest`에서 다루는 delta 계산 및 월별 집계를 검증한다.
+> 향후 해당 함수를 ViewModel 외부로 추출하면 독립 테스트 파일로 분리 가능.
+
+| ID | 설명 | 상태 |
+| --- | --- | --- |
+| T-CHART-01 | 이력 없을 때 빈 리스트 반환 | 설계 상 보장 (emptyList 조기 반환) |
+| T-CHART-02 | 단일 월 이력 → 단일 항목 반환 | 설계 상 보장 (sortedMonths.size < 2 분기) |
+| T-CHART-03 | CREATED 이력 delta = newAmount (자산) | 코드 검토 완료 |
+| T-CHART-04 | CREATED 이력 delta = -newAmount (부채) | 코드 검토 완료 |
+| T-CHART-05 | UPDATED 이력 delta = newAmount - previousAmount | 코드 검토 완료 |
+| T-CHART-06 | DELETED 이력 delta = -previousAmount (자산) | 코드 검토 완료 |
+| T-CHART-07 | 월별 누적 합산 정확도 | 코드 검토 완료 |
+| T-CHART-08 | 레이블이 "MM" 형식으로 잘림 (substring(5)) | 코드 검토 완료 |
+
+---
+
+## 7. 추후 기록 원칙
 
 실제 테스트를 실행한 뒤에는 실패 내역을 삭제하지 않고, 실패 원인과 수정 내역을 `bugfix_log.md`에 연결하여 기록한다. 최종 제출 전에는 모든 필수 테스트가 PASS 상태가 되도록 관리한다.

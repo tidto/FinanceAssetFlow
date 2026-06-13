@@ -65,6 +65,17 @@
 - [x] `docs/bugfix_log.md` 기록
 - [x] `docs/implementation_log.md` 갱신
 
+## Phase 8. 기능 확장 (취업 포트폴리오 강화)
+
+- [x] 순자산 추이 막대 그래프 구현 (Compose Canvas, 외부 라이브러리 없음)
+  - `NetWorthChartEntry` 데이터 클래스 추가
+  - `AssetHistoryDao.observeAllHistories()` 쿼리 추가
+  - `AssetRepository.observeAllHistories()` 추가
+  - `AssetViewModel.buildNetWorthChart()` 월별 delta 누적 계산
+  - `DashboardScreen` — `NetWorthChartSection` + `NetWorthBarChart` 컴포저블 추가
+- [ ] 실시간 주식 시세 API 연동 (예정 — API 키 필요)
+- [ ] 리밸런싱 자동 계산기 (예정)
+
 ## Phase 7. 문서화
 
 - [x] `docs/requirements.md`

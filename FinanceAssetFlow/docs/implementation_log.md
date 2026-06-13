@@ -65,6 +65,50 @@
 
 ---
 
+## 2026-06-13 — 순자산 추이 그래프 추가
+
+### 작업 내용
+
+- **NetWorthBarChart 컴포저블 신규 구현**
+  - 외부 차트 라이브러리 없이 Jetpack Compose Canvas API 직접 사용
+  - 월별 막대 그래프 + 추세선(꺾은선) 오버레이
+  - 양수 순자산: Primary 색상 막대 / 음수: Error 색상 막대
+  - 막대 위 금액 라벨(예: "980만"), 하단 월 라벨(예: "06") 표시
+  - 데이터 6개 이하일 때만 금액 라벨 표시 (공간 절약)
+
+- **데이터 파이프라인 추가**
+  - `AssetHistoryDao`에 `observeAllHistories(): Flow<List<AssetHistoryEntity>>` 쿼리 추가
+  - `AssetRepository`에 `observeAllHistories()` 위임 메서드 추가
+  - `AssetViewModel.dashboardUiState`: 기존 3-way combine → 4-way combine으로 확장
+    - 내부 combine(assets, targets, query) + 외부 combine(histories) 중첩 구조 사용
+  - `buildNetWorthChart()` 비공개 함수 추가: 이력 delta를 월별로 집계하여 누적 순자산 계산
+
+- **UiState 확장**
+  - `DashboardUiState`에 `netWorthChart: List<NetWorthChartEntry>` 필드 추가
+  - `NetWorthChartEntry(label: String, netWorth: Long)` 데이터 클래스 추가
+
+- **DashboardScreen 업데이트**
+  - `SummarySection` 바로 아래 `NetWorthChartSection` 조건부 표시 (데이터 없으면 숨김)
+  - Canvas 관련 import 추가 (CornerRadius, Offset, Size, Path, Stroke, TextStyle, rememberTextMeasurer)
+
+### 설계 결정
+
+| 항목 | 결정 | 이유 |
+| --- | --- | --- |
+| 외부 라이브러리 미사용 | Compose Canvas 직접 구현 | MPAndroidChart 등 의존성 추가 없이 면접 어필 포인트 "직접 구현" 강조 가능 |
+| delta 누적 방식 | 이력 delta 합산으로 월별 순자산 근사 | 과거 스냅샷 테이블이 없으므로 CREATED/UPDATED/DELETED 이력에서 변동분 역산 |
+| 부채 delta 반전 | isDebt 여부에 따라 delta 부호 반전 | 부채 증가는 순자산 감소이므로 음수 처리 필요 |
+| 1개월 이하 데이터 | 단일 막대 1개 표시 | 추세를 보기엔 부족하나 "데이터 없음"보다 현재 상태를 보여주는 것이 유용 |
+
+### 트레이드오프
+
+| 항목 | 선택 | 대안 | 이유 |
+| --- | --- | --- | --- |
+| 차트 데이터 계산 위치 | ViewModel (buildNetWorthChart) | Repository 계층 | 계산 로직이 표현 목적에 가까워 ViewModel이 적합 |
+| 차트 종류 | 막대 + 추세선 혼합 | 순수 꺾은선 그래프 | 막대는 월별 절대값을 직관적으로, 선은 추세를 동시에 표현 |
+
+---
+
 ## 2026-06-12 — 프로젝트 초기 구현
 
 ### 작업 내용
