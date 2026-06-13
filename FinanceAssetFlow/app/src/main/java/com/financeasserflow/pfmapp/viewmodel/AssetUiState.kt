@@ -21,6 +21,12 @@ data class DashboardUiState(
     val categoryBars: List<CategoryBarUiState> = emptyList(),
     val items: List<AssetListItemUiState> = emptyList(),
     val searchQuery: String = "",
+    val netWorthChart: List<NetWorthChartEntry> = emptyList(),
+)
+
+data class NetWorthChartEntry(
+    val label: String,
+    val netWorth: Long,
 )
 
 data class CategoryBarUiState(

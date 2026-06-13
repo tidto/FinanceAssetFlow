@@ -46,6 +46,9 @@ interface AssetHistoryDao {
     @Query("SELECT * FROM asset_histories WHERE assetId = :assetId ORDER BY createdAt DESC")
     fun observeHistories(assetId: Long): Flow<List<AssetHistoryEntity>>
 
+    @Query("SELECT * FROM asset_histories ORDER BY createdAt ASC")
+    fun observeAllHistories(): Flow<List<AssetHistoryEntity>>
+
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insert(history: AssetHistoryEntity): Long
 

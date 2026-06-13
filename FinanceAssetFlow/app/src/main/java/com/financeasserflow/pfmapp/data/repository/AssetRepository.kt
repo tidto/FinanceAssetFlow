@@ -28,6 +28,8 @@ class AssetRepository(
 
     fun observeHistories(assetId: Long): Flow<List<AssetHistoryEntity>> = historyDao.observeHistories(assetId)
 
+    fun observeAllHistories(): Flow<List<AssetHistoryEntity>> = historyDao.observeAllHistories()
+
     fun observeTargets(): Flow<List<PortfolioTargetEntity>> = targetDao.observeTargets()
 
     suspend fun getAssetOnce(assetId: Long): AssetEntity? = assetDao.getAssetOnce(assetId)

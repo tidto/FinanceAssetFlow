@@ -1,6 +1,7 @@
 package com.financeasserflow.pfmapp.ui.screen
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -35,13 +36,24 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.financeasserflow.pfmapp.data.model.AssetCategory
 import com.financeasserflow.pfmapp.ui.components.AssetCard
 import com.financeasserflow.pfmapp.viewmodel.AssetViewModel
 import com.financeasserflow.pfmapp.viewmodel.DashboardUiState
+import com.financeasserflow.pfmapp.viewmodel.NetWorthChartEntry
 import com.financeasserflow.pfmapp.viewmodel.toMoneyText
 import com.financeasserflow.pfmapp.viewmodel.toPercentText
 
@@ -108,6 +120,12 @@ fun DashboardScreen(
 
             item {
                 SummarySection(state = state)
+            }
+
+            if (state.netWorthChart.isNotEmpty()) {
+                item {
+                    NetWorthChartSection(entries = state.netWorthChart)
+                }
             }
 
             if (state.warningMessage != null) {
@@ -290,6 +308,123 @@ private fun EmptyState(isSearch: Boolean) {
                 "등록된 자산이 없습니다. 오른쪽 아래 + 버튼으로 첫 자산을 추가해 보세요."
             },
             style = MaterialTheme.typography.bodyMedium,
+        )
+    }
+}
+
+@Composable
+private fun NetWorthChartSection(entries: List<NetWorthChartEntry>) {
+    Card(
+        modifier = Modifier
+            .padding(horizontal = 16.dp)
+            .fillMaxWidth(),
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "순자산 추이",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "월별 누적 순자산 변동",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            NetWorthBarChart(entries = entries)
+        }
+    }
+}
+
+@Composable
+private fun NetWorthBarChart(entries: List<NetWorthChartEntry>) {
+    val barColor = MaterialTheme.colorScheme.primary
+    val negativeColor = MaterialTheme.colorScheme.error
+    val lineColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+    val labelColor = MaterialTheme.colorScheme.onSurfaceVariant
+    val textMeasurer = rememberTextMeasurer()
+
+    val chartHeight = 160.dp
+    val labelTextStyle = TextStyle(fontSize = 10.sp, color = labelColor, textAlign = TextAlign.Center)
+    val amountTextStyle = TextStyle(fontSize = 8.sp, color = labelColor, textAlign = TextAlign.Center)
+
+    Canvas(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(chartHeight),
+    ) {
+        val canvasWidth = size.width
+        val canvasHeight = size.height
+        val bottomPadding = 36f
+        val topPadding = 20f
+        val chartAreaHeight = canvasHeight - bottomPadding - topPadding
+
+        val maxVal = entries.maxOf { it.netWorth }.coerceAtLeast(1L).toFloat()
+        val minVal = entries.minOf { it.netWorth }.coerceAtMost(0L).toFloat()
+        val range = (maxVal - minVal).coerceAtLeast(1f)
+
+        val barCount = entries.size
+        val totalBarWidth = canvasWidth * 0.65f
+        val barWidth = (totalBarWidth / barCount).coerceAtMost(40.dp.toPx())
+        val gap = (canvasWidth - barWidth * barCount) / (barCount + 1)
+
+        val zeroY = topPadding + chartAreaHeight * (1f - (-minVal / range))
+
+        drawLine(
+            color = lineColor,
+            start = Offset(0f, zeroY),
+            end = Offset(canvasWidth, zeroY),
+            strokeWidth = 1.dp.toPx(),
+        )
+
+        val linePath = Path()
+        entries.forEachIndexed { i, entry ->
+            val x = gap + i * (barWidth + gap)
+            val barHeightRatio = entry.netWorth.toFloat() / range
+            val barH = (chartAreaHeight * kotlin.math.abs(barHeightRatio)).coerceAtLeast(2f)
+            val top = if (entry.netWorth >= 0) zeroY - barH else zeroY
+            val color = if (entry.netWorth >= 0) barColor else negativeColor
+
+            drawRoundRect(
+                color = color,
+                topLeft = Offset(x, top),
+                size = Size(barWidth, barH),
+                cornerRadius = CornerRadius(4.dp.toPx(), 4.dp.toPx()),
+            )
+
+            val centerX = x + barWidth / 2f
+            val dotY = if (entry.netWorth >= 0) top else top + barH
+            if (i == 0) linePath.moveTo(centerX, dotY) else linePath.lineTo(centerX, dotY)
+
+            val labelResult = textMeasurer.measure(entry.label, labelTextStyle)
+            drawText(
+                textLayoutResult = labelResult,
+                topLeft = Offset(
+                    centerX - labelResult.size.width / 2f,
+                    canvasHeight - bottomPadding + 6f,
+                ),
+            )
+
+            if (barCount <= 6) {
+                val amountText = if (entry.netWorth >= 1_000_000L) {
+                    "${entry.netWorth / 1_000_000L}백만"
+                } else {
+                    "${entry.netWorth / 10_000L}만"
+                }
+                val amountResult = textMeasurer.measure(amountText, amountTextStyle)
+                val amountY = if (entry.netWorth >= 0) top - amountResult.size.height - 2f else top + barH + 2f
+                drawText(
+                    textLayoutResult = amountResult,
+                    topLeft = Offset(centerX - amountResult.size.width / 2f, amountY),
+                )
+            }
+        }
+
+        drawPath(
+            path = linePath,
+            color = barColor.copy(alpha = 0.5f),
+            style = Stroke(width = 1.5.dp.toPx()),
         )
     }
 }

@@ -4,7 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.financeasserflow.pfmapp.data.model.AssetCategory
 import com.financeasserflow.pfmapp.data.model.AssetEntity
+import com.financeasserflow.pfmapp.data.model.AssetHistoryEntity
 import com.financeasserflow.pfmapp.data.model.AssetType
+import com.financeasserflow.pfmapp.data.model.ChangeType
 import com.financeasserflow.pfmapp.data.model.PortfolioTargetEntity
 import com.financeasserflow.pfmapp.data.model.currentValue
 import com.financeasserflow.pfmapp.data.model.isDebt
@@ -23,6 +25,9 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
@@ -41,11 +46,10 @@ class AssetViewModel @Inject constructor(
 
     val dashboardUiState: StateFlow<DashboardUiState> =
         combine(
-            repository.observeAssets(),
-            repository.observeTargets(),
-            _searchQuery,
-        ) { assets, targets, query ->
-            buildDashboardState(assets, targets, query)
+            combine(repository.observeAssets(), repository.observeTargets(), _searchQuery) { a, b, c -> Triple(a, b, c) },
+            repository.observeAllHistories(),
+        ) { (assets, targets, query), histories ->
+            buildDashboardState(assets, targets, query, histories)
         }.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
@@ -270,6 +274,7 @@ class AssetViewModel @Inject constructor(
         assets: List<AssetEntity>,
         targets: List<PortfolioTargetEntity>,
         query: String,
+        histories: List<AssetHistoryEntity> = emptyList(),
     ): DashboardUiState {
         val assetOnly = assets.filter { it.assetType == AssetType.ASSET }
         val debtOnly = assets.filter { it.assetType == AssetType.LIABILITY }
@@ -343,6 +348,8 @@ class AssetViewModel @Inject constructor(
             }
         }
 
+        val netWorthChart = buildNetWorthChart(histories, assets)
+
         return DashboardUiState(
             totalAsset = totalAsset,
             totalDebt = totalDebt,
@@ -353,6 +360,64 @@ class AssetViewModel @Inject constructor(
             categoryBars = categoryBars,
             items = filteredItems,
             searchQuery = query,
+            netWorthChart = netWorthChart,
         )
+    }
+
+    /**
+     * 이력(histories)을 월별로 그룹화하여 순자산 추이를 계산한다.
+     * 각 이력의 newAmount/previousAmount delta를 assetId별로 누적하여
+     * 해당 시점의 자산 총액 변동을 월별로 집계한다.
+     * 부채(DELETED changeType은 마이너스 방향)를 고려한 순자산은
+     * 현재 스냅샷 기반이 아닌 이력 delta 누적으로 근사 계산한다.
+     * 데이터가 없거나 1개월 이하이면 빈 리스트를 반환한다.
+     */
+    private fun buildNetWorthChart(
+        histories: List<AssetHistoryEntity>,
+        assets: List<AssetEntity>,
+    ): List<NetWorthChartEntry> {
+        if (histories.isEmpty()) return emptyList()
+
+        val fmt = SimpleDateFormat("yyyy-MM", Locale.KOREA)
+
+        val assetTypeMap = assets.associate { it.id to it.assetType }
+
+        val monthlyDelta = mutableMapOf<String, Long>()
+        histories.forEach { h ->
+            val month = fmt.format(Date(h.createdAt))
+            val isDebt = assetTypeMap[h.assetId]?.name == "LIABILITY"
+            val delta = when (h.changeType) {
+                ChangeType.CREATED -> {
+                    val v = h.newAmount ?: 0L
+                    if (isDebt) -v else v
+                }
+                ChangeType.UPDATED, ChangeType.VALUATION_UPDATED -> {
+                    val prev = h.previousAmount ?: 0L
+                    val next = h.newAmount ?: 0L
+                    val diff = next - prev
+                    if (isDebt) -diff else diff
+                }
+                ChangeType.DELETED -> {
+                    val v = h.previousAmount ?: 0L
+                    if (isDebt) v else -v
+                }
+            }
+            monthlyDelta[month] = (monthlyDelta[month] ?: 0L) + delta
+        }
+
+        val sortedMonths = monthlyDelta.keys.sorted()
+        if (sortedMonths.size < 2) {
+            val singleMonth = sortedMonths.firstOrNull() ?: return emptyList()
+            return listOf(NetWorthChartEntry(label = singleMonth.substring(5), netWorth = monthlyDelta[singleMonth] ?: 0L))
+        }
+
+        var cumulative = 0L
+        return sortedMonths.map { month ->
+            cumulative += monthlyDelta[month] ?: 0L
+            NetWorthChartEntry(
+                label = month.substring(5),
+                netWorth = cumulative,
+            )
+        }
     }
 }
