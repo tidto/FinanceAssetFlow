@@ -1,0 +1,8 @@
+<resources>
+    <color name="finance_primary">#1457C5</color>
+    <color name="finance_secondary">#0F8A5F</color>
+    <color name="finance_tertiary">#B54708</color>
+    <color name="finance_background">#F5F7FB</color>
+    <color name="finance_surface">#FFFFFF</color>
+</resources>
+

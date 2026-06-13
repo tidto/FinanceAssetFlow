@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard Mockup</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div>
+        <p class="muted">2026.06.12 기준</p>
+        <h1>내 자산</h1>
+      </div>
+      <a class="button" href="index.html">목록</a>
+    </header>
+    <main>
+      <section class="summary">
+        <div class="metric">
+          <p class="label">순자산</p>
+          <p class="value">9,610,000원</p>
+        </div>
+        <div class="row">
+          <div class="metric">
+            <p class="label">총자산</p>
+            <p class="amount">11,410,000원</p>
+          </div>
+          <div class="metric">
+            <p class="label">총부채</p>
+            <p class="amount negative">1,800,000원</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>자산 비율</h2>
+        <div class="bar-list">
+          <div>
+            <div class="bar-label"><span>현금성</span><strong>11%</strong></div>
+            <div class="bar"><span class="cash" style="width: 11%"></span></div>
+          </div>
+          <div>
+            <div class="bar-label"><span>예적금</span><strong>44%</strong></div>
+            <div class="bar"><span class="saving" style="width: 44%"></span></div>
+          </div>
+          <div>
+            <div class="bar-label"><span>투자</span><strong>45%</strong></div>
+            <div class="bar"><span class="invest" style="width: 45%"></span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="row">
+          <h2>자산 목록</h2>
+          <span class="pill">5개</span>
+        </div>
+        <a class="asset-card row" href="asset_detail.html">
+          <div>
+            <h3>삼성전자 주식</h3>
+            <p class="muted">투자자산</p>
+          </div>
+          <div>
+            <p class="amount">3,240,000원</p>
+            <p class="positive muted">+8.0%</p>
+          </div>
+        </a>
+        <div class="asset-card row">
+          <div>
+            <h3>국민은행 정기예금</h3>
+            <p class="muted">예적금</p>
+          </div>
+          <p class="amount">5,000,000원</p>
+        </div>
+        <div class="asset-card row">
+          <div>
+            <h3>학자금 대출</h3>
+            <p class="muted">부채</p>
+          </div>
+          <p class="amount negative">1,800,000원</p>
+        </div>
+      </section>
+    </main>
+    <a class="fab" href="asset_edit.html">+</a>
+  </div>
+</body>
+</html>
+

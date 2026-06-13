@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PortfolioScreen 목업</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body { font-family: 'Noto Sans KR', sans-serif; background: #f5f7fa; margin: 0; }
+    .topbar { background: #fff; padding: 16px 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #e0e0e0; }
+    .topbar h1 { font-size: 1.1rem; margin: 0; flex: 1; text-align: center; }
+    .screen { max-width: 480px; margin: 0 auto; padding: 16px; }
+    .info-card { background: #e3f2fd; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+    .info-card h3 { margin: 0 0 6px; font-size: 0.95rem; color: #0d47a1; }
+    .info-card p { margin: 0; font-size: 0.85rem; color: #1565C0; }
+    .target-card { background: #fff; border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .target-card h3 { margin: 0 0 16px; font-size: 1rem; font-weight: 600; }
+    .target-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f0f0f0; }
+    .target-row:last-child { border-bottom: none; }
+    .target-label { font-weight: 500; font-size: 0.95rem; }
+    .target-sub { color: #888; font-size: 0.82rem; margin-top: 2px; }
+    .target-input { border: 1px solid #b0bec5; border-radius: 8px; padding: 8px 12px; width: 80px; text-align: right; font-size: 0.95rem; }
+    .save-btn { display: block; width: 100%; padding: 14px; margin-top: 20px; background: #1565C0; color: #fff; border: none; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; }
+    .back-btn { background: none; border: none; cursor: pointer; font-size: 1.2rem; color: #1565C0; }
+    .tag-new { background: #e8f5e9; color: #1b5e20; border-radius: 4px; padding: 1px 6px; font-size: 0.75rem; margin-left: 6px; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <button class="back-btn">←</button>
+    <h1>포트폴리오 목표 설정 <span class="tag-new">4번째 화면</span></h1>
+  </div>
+
+  <div class="screen">
+    <div class="info-card">
+      <h3>목표 비율 안내</h3>
+      <p>각 자산군의 목표 비율을 설정하세요. 현재 비중이 목표를 초과하면 대시보드에 경고가 표시됩니다. 빈칸으로 두면 해당 카테고리는 경고 없이 유지됩니다.</p>
+    </div>
+
+    <div class="target-card">
+      <h3>자산군별 목표 설정</h3>
+
+      <div class="target-row">
+        <div>
+          <div class="target-label">현금성 자산</div>
+          <div class="target-sub">현재: 10.0% (1,250,000원)</div>
+        </div>
+        <input class="target-input" type="number" placeholder="%" value="20" />
+      </div>
+
+      <div class="target-row">
+        <div>
+          <div class="target-label">예적금</div>
+          <div class="target-sub">현재: 40.3% (5,000,000원)</div>
+        </div>
+        <input class="target-input" type="number" placeholder="%" value="30" />
+      </div>
+
+      <div class="target-row">
+        <div>
+          <div class="target-label">투자자산</div>
+          <div class="target-sub">현재: 41.3% (5,160,000원)</div>
+        </div>
+        <input class="target-input" type="number" placeholder="%" value="70" />
+      </div>
+
+      <div class="target-row">
+        <div>
+          <div class="target-label">기타 자산</div>
+          <div class="target-sub">현재: 0.0% (0원)</div>
+        </div>
+        <input class="target-input" type="number" placeholder="%" value="" />
+      </div>
+    </div>
+
+    <button class="save-btn">목표 비율 저장</button>
+  </div>
+</body>
+</html>

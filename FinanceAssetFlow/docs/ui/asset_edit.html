@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Asset Edit Mockup</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div>
+        <p class="muted">Asset Form</p>
+        <h1>자산 등록</h1>
+      </div>
+      <a class="button" href="dashboard.html">닫기</a>
+    </header>
+    <main>
+      <section class="form-panel">
+        <label>
+          자산명
+          <input type="text" value="삼성전자 주식">
+        </label>
+        <label>
+          자산/부채 구분
+          <select>
+            <option>자산</option>
+            <option>부채</option>
+          </select>
+        </label>
+        <label>
+          분류
+          <select>
+            <option>투자자산</option>
+            <option>현금성 자산</option>
+            <option>예적금</option>
+            <option>부채</option>
+            <option>기타</option>
+          </select>
+        </label>
+        <label>
+          매입금액
+          <input type="number" inputmode="numeric" value="3000000">
+        </label>
+        <label>
+          현재 평가금액
+          <input type="number" inputmode="numeric" value="3240000">
+          <span class="error">금액은 0 이상 숫자로 입력해야 합니다.</span>
+        </label>
+        <label>
+          메모
+          <textarea>분기마다 평가금액을 수동으로 갱신</textarea>
+        </label>
+        <div class="actions">
+          <a class="button" href="dashboard.html">취소</a>
+          <a class="button primary" href="asset_detail.html">저장</a>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
+
